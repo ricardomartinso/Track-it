@@ -1,26 +1,32 @@
 import React from "react";
 import styled from "styled-components";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoginPage from "./LoginPage";
 import RegisterPage from "./RegisterPage";
+import Hoje from "./Hoje";
 import GlobalStyle from "./GlobalStyle";
-import UserContext from "./LoginPage";
-import { useState } from "react/cjs/react.production.min";
+import TokenContext from "./contexts/TokenContext";
+import UserContext from "./contexts/UserContext";
+import { useState } from "react";
 
 export default function App() {
-  const [userLogin, setUserLogin] = useState([]);
+  const [token, setToken] = useState([]);
+  const [userInfo, setUserInfo] = useState({});
   return (
-    <BrowserRouter>
-      <GlobalStyle />
-      <Container>
-        <Routes>
-          <UserContext.Provider value={{ userLogin, setUserLogin }}>
-            <Route path="/" element={<LoginPage />} />
-            <Route path="/cadastro" element={<RegisterPage />} />
-          </UserContext.Provider>
-        </Routes>
-      </Container>
-    </BrowserRouter>
+    <UserContext.Provider value={{ userInfo, setUserInfo }}>
+      <TokenContext.Provider value={{ token, setToken }}>
+        <BrowserRouter>
+          <GlobalStyle />
+          <Container>
+            <Routes>
+              <Route path="/" element={<LoginPage />} />
+              <Route path="/cadastro" element={<RegisterPage />} />
+              <Route path="/hoje" element={<Hoje />} />
+            </Routes>
+          </Container>
+        </BrowserRouter>
+      </TokenContext.Provider>
+    </UserContext.Provider>
   );
 }
 const Container = styled.div`

@@ -6,7 +6,9 @@ const GlobalStyle = createGlobalStyle`
    License: none (public domain)
 */
 * {
-	font-family: "Lexend Deca", sans-serif;
+	font-family: 'Playball', cursive;
+	font-family: 'Roboto', sans-serif;
+	box-sizing: border-box;
 }
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,

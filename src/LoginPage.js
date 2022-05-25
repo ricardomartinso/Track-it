@@ -1,13 +1,16 @@
 import styled from "styled-components";
 import imagem from "./assets/logo.png";
 import { useNavigate, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState, useContext } from "react";
 import axios from "axios";
+import TokenContext from "./contexts/TokenContext";
+import UserContext from "./contexts/UserContext";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
+  const [email, setEmail] = useState("ricardo@ricardo.com");
+  const [password, setPassword] = useState("12345");
+  const { setToken } = useContext(TokenContext);
+  const { setUserInfo } = useContext(UserContext);
   const navigate = useNavigate();
 
   function loginApp(event) {
@@ -21,9 +24,11 @@ export default function LoginPage() {
       userLogin
     );
     promise.then((response) => {
-      console.log(response.data);
-      navigate("/habitos", { state: response.data }, { replace: true });
+      setUserInfo({ ...response.data });
+      setToken(response.data.token);
+      navigate("/hoje", { replace: true });
     });
+    promise.catch(() => alert("Usuário ou Senha inválidos"));
   }
 
   return (

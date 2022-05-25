@@ -1,5 +1,7 @@
 import styled from "styled-components";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+
 import axios from "axios";
 import logo from "./assets/logo.png";
 
@@ -8,6 +10,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   function cadastro() {
     const userRegister = {
@@ -22,9 +25,12 @@ export default function RegisterPage() {
       userRegister
     );
     promise.then((response) => {
-      console.log("cadastro finalizado");
+      alert("cadastro finalizado");
+      navigate("/");
     });
-    promise.catch((response) => response);
+    promise.catch((err) =>
+      alert("Falha no cadastro, por favor tente novamente!")
+    );
   }
 
   return (
@@ -61,6 +67,7 @@ export default function RegisterPage() {
         />
         <Button>Cadastrar</Button>
       </Form>
+      <Link to="/">Já tem uma conta? Faça Login</Link>
     </Register>
   );
 }
@@ -89,6 +96,7 @@ const Input = styled.input`
   &::placeholder {
     color: #dbdbdb;
     font-weight: bold;
+    padding-left: 7px;
   }
 `;
 const Button = styled.button`
@@ -98,6 +106,7 @@ const Button = styled.button`
   border-radius: 4.5px;
   background-color: #52b6ff;
   margin-top: 7px;
+  margin-bottom: 16px;
   color: #fff;
   font-size: 20px;
 `;
