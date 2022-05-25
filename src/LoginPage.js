@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import imagem from "./logo.png";
+import imagem from "./assets/logo.png";
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -7,9 +7,11 @@ import axios from "axios";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const navigate = useNavigate();
 
-  useEffect(() => {
+  function loginApp(event) {
+    event.preventDefault();
     const userLogin = {
       email,
       password,
@@ -19,21 +21,22 @@ export default function LoginPage() {
       userLogin
     );
     promise.then((response) => {
-      navigate("/habitos");
+      console.log(response.data);
+      navigate("/habitos", { state: response.data }, { replace: true });
     });
-  }, []);
+  }
 
   return (
     <LoginPageStyled>
       <img src={imagem} alt="" />
-      <form>
-        <input
+      <Form onSubmit={loginApp}>
+        <Input
           type="email"
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
           value={email}
         />
-        <input
+        <Input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -41,8 +44,8 @@ export default function LoginPage() {
           id="senha"
           placeholder="Senha"
         />
-        <button type="submit">Entrar</button>
-      </form>
+        <Button type="submit">Entrar</Button>
+      </Form>
       <Link to="/cadastro">Não tem uma conta? Cadastre-se</Link>
     </LoginPageStyled>
   );
@@ -53,9 +56,35 @@ const LoginPageStyled = styled.div`
   justify-content: center;
   flex-direction: column;
   width: 100%;
+  margin: 80px auto 0 auto;
+`;
+const Form = styled.form`
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+`;
+const Input = styled.input`
+  width: 303px;
+  height: 45px;
+  border: 1px solid #d4d4d4;
+  border-radius: 5px;
+  font-size: 20px;
+  color: #dbdbdb;
+  margin-top: 7px;
 
-  form {
-    display: flex;
-    flex-direction: column;
+  &::placeholder {
+    color: #dbdbdb;
+    font-weight: bold;
   }
+`;
+const Button = styled.button`
+  width: 303px;
+  height: 45px;
+  border: none;
+  border-radius: 4.5px;
+  background-color: #52b6ff;
+  margin-top: 7px;
+  margin-bottom: 16px;
+  color: #fff;
+  font-size: 20px;
 `;

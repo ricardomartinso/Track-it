@@ -4,15 +4,20 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import LoginPage from "./LoginPage";
 import RegisterPage from "./RegisterPage";
 import GlobalStyle from "./GlobalStyle";
+import UserContext from "./LoginPage";
+import { useState } from "react/cjs/react.production.min";
 
 export default function App() {
+  const [userLogin, setUserLogin] = useState([]);
   return (
     <BrowserRouter>
       <GlobalStyle />
       <Container>
         <Routes>
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/cadastro" element={<RegisterPage />} />
+          <UserContext.Provider value={{ userLogin, setUserLogin }}>
+            <Route path="/" element={<LoginPage />} />
+            <Route path="/cadastro" element={<RegisterPage />} />
+          </UserContext.Provider>
         </Routes>
       </Container>
     </BrowserRouter>
@@ -21,7 +26,6 @@ export default function App() {
 const Container = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
   flex-direction: column;
 
   width: 100%;
@@ -29,4 +33,5 @@ const Container = styled.div`
   margin: 0 auto;
 
   background-color: #ccc;
+  font-family: "Lexend Deca", sans-serif;
 `;
