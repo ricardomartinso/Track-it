@@ -38,6 +38,6 @@ const Container = styled.div`
   height: 100vh;
   margin: 0 auto;
 
-  background-color: #ccc;
+  background-color: #f2f2f2;
   font-family: "Lexend Deca", sans-serif;
 `;

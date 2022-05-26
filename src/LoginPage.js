@@ -5,6 +5,7 @@ import { useState, useContext } from "react";
 import axios from "axios";
 import TokenContext from "./contexts/TokenContext";
 import UserContext from "./contexts/UserContext";
+import { ThreeDots } from "react-loader-spinner";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("ricardo@ricardo.com");
@@ -12,13 +13,14 @@ export default function LoginPage() {
   const { setToken } = useContext(TokenContext);
   const { setUserInfo } = useContext(UserContext);
   const navigate = useNavigate();
-
+  const [isLoading, setIsLoading] = useState(false);
   function loginApp(event) {
     event.preventDefault();
     const userLogin = {
       email,
       password,
     };
+    setIsLoading(true);
     const promise = axios.post(
       "https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/auth/login",
       userLogin
@@ -28,18 +30,38 @@ export default function LoginPage() {
       setToken(response.data.token);
       navigate("/hoje", { replace: true });
     });
-    promise.catch(() => alert("Usuário ou Senha inválidos"));
+
+    promise.catch(() => {
+      setIsLoading(false);
+      alert("Usuário ou Senha inválidos");
+    });
   }
 
   return (
     <LoginPageStyled>
+      <Form
+        loginApp={loginApp}
+        setEmail={setEmail}
+        email={email}
+        password={password}
+        setPassword={setPassword}
+        isLoading={isLoading}
+      />
+    </LoginPageStyled>
+  );
+}
+
+function Form({ loginApp, setEmail, email, password, setPassword, isLoading }) {
+  return (
+    <>
       <img src={imagem} alt="" />
-      <Form onSubmit={loginApp}>
+      <FormStyled onSubmit={loginApp}>
         <Input
           type="email"
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
           value={email}
+          disabled={isLoading}
         />
         <Input
           type="password"
@@ -48,13 +70,21 @@ export default function LoginPage() {
           name="senha"
           id="senha"
           placeholder="Senha"
+          disabled={isLoading}
         />
-        <Button type="submit">Entrar</Button>
-      </Form>
+        {isLoading ? (
+          <Button type="submit">
+            <ThreeDots color="#FFFFFF" />
+          </Button>
+        ) : (
+          <Button type="submit">Entrar</Button>
+        )}
+      </FormStyled>
       <Link to="/cadastro">Não tem uma conta? Cadastre-se</Link>
-    </LoginPageStyled>
+    </>
   );
 }
+
 const LoginPageStyled = styled.div`
   display: flex;
   align-items: center;
@@ -63,7 +93,7 @@ const LoginPageStyled = styled.div`
   width: 100%;
   margin: 80px auto 0 auto;
 `;
-const Form = styled.form`
+const FormStyled = styled.form`
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -83,6 +113,9 @@ const Input = styled.input`
   }
 `;
 const Button = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 303px;
   height: 45px;
   border: none;

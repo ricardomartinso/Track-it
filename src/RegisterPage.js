@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-
+import { ThreeDots } from "react-loader-spinner";
 import axios from "axios";
 import logo from "./assets/logo.png";
 
@@ -10,38 +10,73 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  function cadastro() {
+  function cadastro(event) {
+    event.preventDefault();
     const userRegister = {
       email,
       name,
       image,
       password,
     };
-    console.log(userRegister);
+    setIsLoading(true);
     const promise = axios.post(
       "https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/auth/sign-up",
       userRegister
     );
     promise.then((response) => {
+      navigate("/", { replace: true });
       alert("cadastro finalizado");
-      navigate("/");
     });
-    promise.catch((err) =>
-      alert("Falha no cadastro, por favor tente novamente!")
-    );
+    promise.catch((err) => {
+      setIsLoading(false);
+      alert("Falha no cadastro, por favor tente novamente!");
+    });
   }
 
   return (
     <Register>
+      <Form
+        isLoading={isLoading}
+        name={name}
+        email={email}
+        password={password}
+        image={image}
+        setName={setName}
+        setEmail={setEmail}
+        setPassword={setPassword}
+        setImage={setImage}
+        cadastro={cadastro}
+        disabled={isLoading}
+      />
+    </Register>
+  );
+}
+function Form({
+  cadastro,
+  email,
+  setEmail,
+  password,
+  setPassword,
+  setName,
+  name,
+  image,
+  setImage,
+  isLoading,
+  disabled,
+}) {
+  return (
+    <>
       <img src={logo} alt="" />
-      <Form onSubmit={cadastro}>
+      <FormStyled onSubmit={cadastro}>
         <Input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          disabled={isLoading}
           required
         />
         <Input
@@ -49,6 +84,7 @@ export default function RegisterPage() {
           placeholder="Senha"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          disabled={isLoading}
           required
         />
         <Input
@@ -56,6 +92,7 @@ export default function RegisterPage() {
           placeholder="Nome"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          disabled={isLoading}
           required
         />
         <Input
@@ -63,15 +100,21 @@ export default function RegisterPage() {
           placeholder="Foto"
           value={image}
           onChange={(e) => setImage(e.target.value)}
+          disabled={isLoading}
           required
         />
-        <Button>Cadastrar</Button>
-      </Form>
+        {isLoading ? (
+          <Button type="submit">
+            <ThreeDots color="#FFFFFF" />
+          </Button>
+        ) : (
+          <Button type="submit">Cadastrar</Button>
+        )}
+      </FormStyled>
       <Link to="/">Já tem uma conta? Faça Login</Link>
-    </Register>
+    </>
   );
 }
-
 const Register = styled.div`
   width: 100%;
   margin: 80px auto 0 auto;
@@ -79,7 +122,7 @@ const Register = styled.div`
   align-items: center;
   flex-direction: column;
 `;
-const Form = styled.form`
+const FormStyled = styled.form`
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -100,6 +143,9 @@ const Input = styled.input`
   }
 `;
 const Button = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 303px;
   height: 45px;
   border: none;
