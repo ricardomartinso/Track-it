@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoginPage from "./LoginPage";
 import RegisterPage from "./RegisterPage";
 import Hoje from "./Hoje";
+import History from "./History";
+import Habits from "./Habits";
 import GlobalStyle from "./GlobalStyle";
 import TokenContext from "./contexts/TokenContext";
 import UserContext from "./contexts/UserContext";
@@ -22,6 +24,8 @@ export default function App() {
               <Route path="/" element={<LoginPage />} />
               <Route path="/cadastro" element={<RegisterPage />} />
               <Route path="/hoje" element={<Hoje />} />
+              <Route path="/habitos" element={<Habits />} />
+              <Route path="/historico" element={<History />} />
             </Routes>
           </Container>
         </BrowserRouter>
