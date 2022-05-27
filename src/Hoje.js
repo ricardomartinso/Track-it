@@ -13,10 +13,13 @@ import setinha from "./assets/vector.png";
 
 export default function Hoje() {
   const dayjs = require("dayjs");
-  const percentage = 79;
+
   const { userInfo } = useContext(UserContext);
   const { token } = useContext(TokenContext);
   const [habits, setHabits] = useState([]);
+  const [percentage, setPercentage] = useState([]);
+  const [progressBar, setProgressBar] = useState(0);
+  const [textProgress, setTextProgress] = useState([]);
 
   useEffect(() => {
     const config = {
@@ -29,10 +32,21 @@ export default function Hoje() {
     );
 
     promise.then((response) => {
+      const textDone = [...response.data];
+      setTextProgress(
+        textDone.map((text) => {
+          if (text.done === true) {
+            return text.done;
+          } else {
+            return;
+          }
+        })
+      );
       setHabits([...response.data]);
+      setPercentage([...response.data]);
     });
   }, []);
-
+  const textLength = textProgress.filter((text) => text !== undefined);
   return (
     <>
       <Header>
@@ -41,11 +55,25 @@ export default function Hoje() {
       </Header>
       <Day>
         {dayjs().locale("pt-br").format("dddd, DD/MM")}
-        <HabitsConcluded>Nenhum hábito concluído ainda</HabitsConcluded>
+        <HabitsConcluded>
+          {textLength > 1 ? (
+            <p color={"#8fc549"}>
+              {(textProgress.length / percentage.length) * 100}% dos hábitos
+              concluídos
+            </p>
+          ) : (
+            <p color={"#666666"}> Nenhum hábito concluído ainda </p>
+          )}
+        </HabitsConcluded>
       </Day>
       <Habits>
         {habits.map((habit) => (
-          <Habit habit={habit} token={token} />
+          <Habit
+            habit={habit}
+            token={token}
+            progressBar={progressBar}
+            setProgressBar={setProgressBar}
+          />
         ))}
       </Habits>
 
@@ -54,7 +82,7 @@ export default function Hoje() {
         <LinkStyled to="/hoje">
           <ProgressBar style={{ width: 91, height: 91 }}>
             <CircularProgressbarWithChildren
-              value={percentage}
+              value={(progressBar / percentage.length) * 100}
               circleRatio={1}
               background={true}
               backgroundPadding={8}
@@ -93,31 +121,60 @@ export default function Hoje() {
     </>
   );
 }
-function Habit({ habit, token }) {
-  const [checkedColor, setCheckedColor] = useState("#ebebeb");
+function Habit({ habit, token, setProgressBar, progressBar }) {
+  const [checkedColor, setCheckedColor] = useState(habit.done);
+  const [currentSequence, setCurrenceSequence] = useState(
+    habit.currentSequence
+  );
+  const [highestSequence, setHighestSequence] = useState(habit.highestSequence);
 
   function markAsDoneHabit() {
-    const config = {
-      Authorization: `Bearer ${token}`,
-    };
+    const config = { headers: { Authorization: `Bearer ${token}` } };
     const promise = axios.post(
       `https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/habits/${habit.id}/check`,
+      "",
       config
     );
     promise.then((response) => {
-      if (checkedColor === "#ebebeb") {
-        setCheckedColor("#8FC549");
-      }
+      setCheckedColor(true);
+      setHighestSequence(highestSequence + 1);
+      setCurrenceSequence(currentSequence + 1);
+      setProgressBar(progressBar + 1);
     });
+    promise.catch((response) => console.log(response.data));
+  }
+  function desmarkAsDoneHabit() {
+    const config = { headers: { Authorization: `Bearer ${token}` } };
+    const promise = axios.post(
+      `https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/habits/${habit.id}/uncheck`,
+      "",
+      config
+    );
+    promise.then((response) => {
+      setCheckedColor(false);
+      setCurrenceSequence(currentSequence - 1);
+      setHighestSequence(highestSequence - 1);
+      setProgressBar(progressBar - 1);
+    });
+    promise.catch((response) => console.log(response.data));
   }
   return (
     <HabitStyled>
       <HabitInfo>
         <h1>{habit.name}</h1>
-        <p>Sequência atual: {habit.currentSequence}</p>
-        <p>Seu recorde: {habit.highestSequence}</p>
+        <p>Sequência atual: {currentSequence}</p>
+        <p>Seu recorde: {highestSequence}</p>
       </HabitInfo>
-      <Check color={checkedColor} onClick={markAsDoneHabit}>
+      <Check
+        color={checkedColor ? "#8fc549" : "#e7e7e7"}
+        onClick={() => {
+          if (checkedColor === true) {
+            desmarkAsDoneHabit();
+          } else {
+            markAsDoneHabit();
+          }
+        }}
+      >
         <img src={setinha} alt="Seta" />
       </Check>
     </HabitStyled>
@@ -185,15 +242,18 @@ const Check = styled.div`
   justify-content: center;
   width: 69px;
   height: 69px;
-  background-color: ${(props) => props.color};
   border: 1px solid #e7e7e7;
+  background-color: ${(props) => props.color};
 `;
-const HabitsConcluded = styled.p`
+const HabitsConcluded = styled.div`
   color: #bababa;
   font-size: 18px;
   font-weight: 400;
   margin-top: 5px;
   text-transform: none;
+  p {
+    color: ${(props) => props.color};
+  }
 `;
 const Day = styled.div`
   width: 100%;

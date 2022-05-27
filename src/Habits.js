@@ -6,9 +6,28 @@ import {
 } from "react-circular-progressbar";
 import { useContext } from "react";
 import UserContext from "./contexts/UserContext";
-
-export default function History() {
+import { useEffect, useState } from "react";
+import axios from "axios";
+import TokenContext from "./contexts/TokenContext";
+import addHabit from "./assets/addHabit.png";
+import plus from "./assets/+.png";
+export default function Habits() {
   const { userInfo } = useContext(UserContext);
+  const { token } = useContext(TokenContext);
+  const [habits, setHabits] = useState([]);
+
+  useEffect(() => {
+    const config = {
+      headers: { Authorization: `Bearer ${token}` },
+    };
+    const promise = axios.get(
+      "https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/habits",
+      config
+    );
+    promise.then((response) => {
+      setHabits([...response.data]);
+    });
+  }, []);
 
   return (
     <>
@@ -17,8 +36,18 @@ export default function History() {
         <img src={userInfo.image} alt={userInfo.name} />
       </Header>
       <HabitsStyled>
-        <h1>Habitós</h1>
-        <p>Em breve você poderá ver o histórico dos seus hábitos aqui!</p>
+        <MyHabits>
+          <h1>Meus Hábitos </h1>
+          <AddHabit>
+            <img src={addHabit} alt="Adicionar Hábito" />
+            <div>
+              <img src={plus} alt="" />
+            </div>
+          </AddHabit>
+        </MyHabits>
+        {habits.map((habit) => (
+          <p> {habit.name} </p>
+        ))}
       </HabitsStyled>
       <Menu>
         <LinkStyled to="/habitos">Hábitos</LinkStyled>
@@ -65,15 +94,44 @@ export default function History() {
   );
 }
 const HabitsStyled = styled.div`
+  display: flex;
+  flex-direction: column;
+  color: black;
+  width: 100%;
+  margin-top: 100px;
   padding: 0 4%;
   h1 {
-    font-size: 24px;
-    color: aliceblue;
+    font-size: 23px;
+    font-weight: 400;
+    color: #126ba5;
   }
   p {
     font-size: 18px;
     color: #666;
   }
+`;
+const AddHabit = styled.div`
+  position: relative;
+  width: 40px;
+  height: 35px;
+
+  &:first-child {
+    position: initial;
+    width: 100%;
+    height: 100%;
+  }
+  div {
+    position: absolute;
+    top: 29%;
+    left: 31%;
+  }
+`;
+
+const MyHabits = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 `;
 const Header = styled.header`
   display: flex;
@@ -84,7 +142,6 @@ const Header = styled.header`
   left: 0;
   width: 100%;
   height: 70px;
-  margin-bottom: 80px;
   padding: 0 18px;
   background-color: #126ba5;
   color: #fff;
