@@ -1,20 +1,26 @@
+import apagar from "./assets/apagar.png";
+import plus from "./assets/+.png";
+import addHabit from "./assets/addHabit.png";
 import styled from "styled-components";
+import axios from "axios";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   CircularProgressbarWithChildren,
   buildStyles,
 } from "react-circular-progressbar";
 import { useContext } from "react";
 import UserContext from "./contexts/UserContext";
-import { useEffect, useState } from "react";
-import axios from "axios";
 import TokenContext from "./contexts/TokenContext";
-import addHabit from "./assets/addHabit.png";
-import plus from "./assets/+.png";
+import dayjs from "dayjs/locale/pt-br";
+
 export default function Habits() {
   const { userInfo } = useContext(UserContext);
   const { token } = useContext(TokenContext);
   const [habits, setHabits] = useState([]);
+  const [toggleCreation, setToggleCreation] = useState(false);
+  const dayjs = require("dayjs");
+  const weekday = require("dayjs/plugin/weekday");
 
   useEffect(() => {
     const config = {
@@ -28,26 +34,48 @@ export default function Habits() {
       setHabits([...response.data]);
     });
   }, []);
-
+  function openOrCloseHabit() {
+    if (toggleCreation === false) {
+      setToggleCreation(true);
+    } else {
+      setToggleCreation(false);
+    }
+  }
   return (
     <>
       <Header>
         TrackIt
         <img src={userInfo.image} alt={userInfo.name} />
       </Header>
+
       <HabitsStyled>
         <MyHabits>
           <h1>Meus Hábitos </h1>
-          <AddHabit>
+          <AddHabit onClick={openOrCloseHabit}>
             <img src={addHabit} alt="Adicionar Hábito" />
             <div>
               <img src={plus} alt="" />
             </div>
           </AddHabit>
         </MyHabits>
-        {habits.map((habit) => (
-          <p> {habit.name} </p>
-        ))}
+        {toggleCreation ? <CreateHabit token={token} /> : ""}
+
+        {habits.length >= 1 ? (
+          habits.map((habit) => (
+            <Habit
+              habit={habit}
+              token={token}
+              dayjs={dayjs}
+              weekday={weekday}
+              key={habit.id}
+            ></Habit>
+          ))
+        ) : (
+          <p>
+            Você não tem nenhum hábito cadastrado ainda. Adicione um hábito para
+            começar a trackear!
+          </p>
+        )}
       </HabitsStyled>
       <Menu>
         <LinkStyled to="/habitos">Hábitos</LinkStyled>
@@ -93,6 +121,174 @@ export default function Habits() {
     </>
   );
 }
+
+function Habit({ habit, token }) {
+  function deleteHabit() {
+    if (window.confirm("Deseja mesmo deletar o seu hábito?") === true) {
+      const config = {
+        headers: { Authorization: `Bearer ${token}` },
+      };
+      const promise = axios.delete(
+        `https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/habits/${habit.id}`,
+        config
+      );
+      promise.then((r) => {
+        alert("Hábito deletado com sucesso!");
+      });
+    }
+  }
+
+  return (
+    <HabitStyled>
+      <DayName>{habit.name}</DayName>
+      <Days>
+        {habit.days.map((day) => {
+          if (day === 1) {
+            return <Day>S</Day>;
+          } else if (day === 2) {
+            return <Day>T</Day>;
+          } else if (day === 3) {
+            return <Day>Q</Day>;
+          } else if (day === 4) {
+            return <Day>Q</Day>;
+          } else if (day === 5) {
+            return <Day>S</Day>;
+          } else if (day === 6) {
+            return <Day>S</Day>;
+          } else if (day === 7) {
+            return <Day>D</Day>;
+          }
+        })}
+      </Days>
+      <img src={apagar} onClick={deleteHabit} />
+    </HabitStyled>
+  );
+}
+function CreateHabit({ token }) {
+  const [habitName, setHabitName] = useState("");
+  const [arrayDays, setArrayDays] = useState([]);
+  function removeRepeatedDays(id) {
+    const arrays = [...arrayDays];
+    if (arrays.includes(id)) {
+      const removeRepeated = arrays.filter((idRepeated) => idRepeated !== id);
+      setArrayDays(removeRepeated);
+      return;
+    }
+  }
+  function addDays(id) {
+    setArrayDays([...arrayDays, id]);
+    removeRepeatedDays(id);
+  }
+  function createHabit() {
+    const config = {
+      headers: { Authorization: `Bearer ${token}` },
+    };
+    const habitCreated = {
+      name: habitName,
+      days: [1, 2, 5],
+    };
+    const promise = axios.post(
+      "https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/habits",
+      habitCreated,
+      config
+    );
+    promise.then((r) => alert("Hábito criado com sucesso!"));
+  }
+  return (
+    <CreateHabitStyled>
+      <input
+        type="text"
+        placeholder="Nome do Hábito"
+        value={habitName}
+        onChange={(e) => setHabitName(e.target.value)}
+      />
+      <Days>
+        <DayButton addDays={addDays} />
+      </Days>
+      <SaveCancel>
+        <Cancel>Cancelar</Cancel>
+        <Save onClick={createHabit}>Salvar</Save>
+      </SaveCancel>
+    </CreateHabitStyled>
+  );
+}
+function DayButton({ addDays }) {
+  const [background, setBackground] = useState("#fff");
+  function changeColor() {
+    if (background === "#fff") {
+      setBackground("#666");
+    } else {
+      setBackground("#fff");
+    }
+  }
+  return (
+    <>
+      <Day
+        background={background}
+        onClick={() => {
+          changeColor();
+          addDays(1);
+        }}
+      >
+        S
+      </Day>
+      <Day
+        background={background}
+        onClick={() => {
+          changeColor();
+          addDays(2);
+        }}
+      >
+        T
+      </Day>
+      <Day
+        background={background}
+        onClick={() => {
+          changeColor();
+          addDays(3);
+        }}
+      >
+        Q
+      </Day>
+      <Day
+        background={background}
+        onClick={() => {
+          changeColor();
+          addDays(4);
+        }}
+      >
+        Q
+      </Day>
+      <Day
+        background={background}
+        onClick={() => {
+          changeColor();
+          addDays(5);
+        }}
+      >
+        S
+      </Day>
+      <Day
+        background={background}
+        onClick={() => {
+          changeColor();
+          addDays(6);
+        }}
+      >
+        S
+      </Day>
+      <Day
+        background={background}
+        onClick={() => {
+          changeColor();
+          addDays(7);
+        }}
+      >
+        D
+      </Day>
+    </>
+  );
+}
 const HabitsStyled = styled.div`
   display: flex;
   flex-direction: column;
@@ -126,12 +322,107 @@ const AddHabit = styled.div`
     left: 31%;
   }
 `;
-
 const MyHabits = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
+`;
+const HabitStyled = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  height: 91px;
+  margin-top: 25px;
+  padding: 15px;
+  background-color: #fff;
+  position: relative;
+  img {
+    cursor: pointer;
+    width: 15px;
+    height: 15px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+`;
+const Days = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+const Day = styled.div`
+  width: 30px;
+  height: 30px;
+  background-color: ${(props) => props.background};
+  color: #dbdbdb;
+  font-size: 20px;
+  border-radius: 5px;
+  border: 1px solid #d4d4d4;
+  margin-right: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+const DayName = styled.p`
+  font-size: 20px;
+  color: #666666;
+  font-weight: 400;
+  &::first-letter {
+    text-transform: uppercase;
+  }
+`;
+const CreateHabitStyled = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-around;
+  width: 100%;
+  background-color: #fff;
+  height: 180px;
+  margin: 25px 0;
+  padding: 14px;
+  input {
+    width: 303px;
+    height: 45px;
+    border: 1px solid #d4d4d4;
+    border-radius: 5px;
+    background-color: #fff;
+    color: #dbdbdb;
+    font-size: 20px;
+    padding-left: 10px;
+    &::placeholder {
+      color: #dbdbdb;
+      font-size: 20px;
+    }
+  }
+`;
+const SaveCancel = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  Link {
+    color: blue;
+    margin-right: 15px;
+  }
+`;
+const Save = styled.button`
+  width: 84px;
+  height: 35px;
+  margin-left: 15px;
+  background-color: #52b6ff;
+  font-size: 20px;
+  text-align: center;
+  color: white;
+  border: none;
+  border-radius: 5px;
+`;
+const Cancel = styled.div`
+  color: #52b6ff;
+  font-size: 20px;
 `;
 const Header = styled.header`
   display: flex;
@@ -180,3 +471,22 @@ const LinkStyled = styled(Link)`
   font-size: 20px;
   color: #52b6ff;
 `;
+//
+//
+//
+//
+//
+// width: 340px
+// height: 91px;
+// background-color: #fff
+// position: relative;
+//
+// <div className="">{habit.name}</div>
+// <div className="">{habit.days.map(day => day)}</div>
+// <img src={apagar}/>
+//
+//
+//
+//
+//
+//

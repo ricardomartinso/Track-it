@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import UserContext from "./contexts/UserContext";
 import styled from "styled-components";
@@ -18,8 +18,6 @@ export default function Hoje() {
   const { token } = useContext(TokenContext);
   const [habits, setHabits] = useState([]);
   const [percentage, setPercentage] = useState([]);
-  const [progressBar, setProgressBar] = useState(0);
-  const [textProgress, setTextProgress] = useState([]);
 
   useEffect(() => {
     const config = {
@@ -32,21 +30,10 @@ export default function Hoje() {
     );
 
     promise.then((response) => {
-      const textDone = [...response.data];
-      setTextProgress(
-        textDone.map((text) => {
-          if (text.done === true) {
-            return text.done;
-          } else {
-            return;
-          }
-        })
-      );
       setHabits([...response.data]);
       setPercentage([...response.data]);
     });
   }, []);
-  const textLength = textProgress.filter((text) => text !== undefined);
   return (
     <>
       <Header>
@@ -55,25 +42,11 @@ export default function Hoje() {
       </Header>
       <Day>
         {dayjs().locale("pt-br").format("dddd, DD/MM")}
-        <HabitsConcluded>
-          {textLength > 1 ? (
-            <p color={"#8fc549"}>
-              {(textProgress.length / percentage.length) * 100}% dos hábitos
-              concluídos
-            </p>
-          ) : (
-            <p color={"#666666"}> Nenhum hábito concluído ainda </p>
-          )}
-        </HabitsConcluded>
+        <HabitsConcluded>{}</HabitsConcluded>
       </Day>
       <Habits>
         {habits.map((habit) => (
-          <Habit
-            habit={habit}
-            token={token}
-            progressBar={progressBar}
-            setProgressBar={setProgressBar}
-          />
+          <Habit habit={habit} token={token} key={habit.id} />
         ))}
       </Habits>
 
@@ -82,7 +55,7 @@ export default function Hoje() {
         <LinkStyled to="/hoje">
           <ProgressBar style={{ width: 91, height: 91 }}>
             <CircularProgressbarWithChildren
-              value={(progressBar / percentage.length) * 100}
+              value={percentage}
               circleRatio={1}
               background={true}
               backgroundPadding={8}
@@ -121,7 +94,7 @@ export default function Hoje() {
     </>
   );
 }
-function Habit({ habit, token, setProgressBar, progressBar }) {
+function Habit({ habit, token }) {
   const [checkedColor, setCheckedColor] = useState(habit.done);
   const [currentSequence, setCurrenceSequence] = useState(
     habit.currentSequence
@@ -139,7 +112,6 @@ function Habit({ habit, token, setProgressBar, progressBar }) {
       setCheckedColor(true);
       setHighestSequence(highestSequence + 1);
       setCurrenceSequence(currentSequence + 1);
-      setProgressBar(progressBar + 1);
     });
     promise.catch((response) => console.log(response.data));
   }
@@ -154,7 +126,6 @@ function Habit({ habit, token, setProgressBar, progressBar }) {
       setCheckedColor(false);
       setCurrenceSequence(currentSequence - 1);
       setHighestSequence(highestSequence - 1);
-      setProgressBar(progressBar - 1);
     });
     promise.catch((response) => console.log(response.data));
   }
