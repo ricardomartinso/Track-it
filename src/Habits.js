@@ -79,6 +79,7 @@ export default function Habits() {
             <Habit
               habit={habit}
               token={token}
+              setHabits={setHabits}
               dayjs={dayjs}
               weekday={weekday}
               key={habit.id}
@@ -136,7 +137,42 @@ export default function Habits() {
   );
 }
 
-function Habit({ habit, token }) {
+function Habit({ habit, token, setHabits }) {
+  const days = ["S", "T", "Q", "Q", "S", "S", "D"];
+
+  function generateHabits() {
+    habit.days.map((id, index) => {
+      days.map((day) => {
+        if (index + 1 === id) {
+          return (
+            <Day background={"#cfcfcf"} color={"#fff"}>
+              {day}
+            </Day>
+          );
+        } else {
+          return (
+            <Day background={"#fff"} color={"#cfcfcf"}>
+              {day}
+            </Day>
+          );
+        }
+      });
+    });
+  }
+  const habitDays = generateHabits();
+
+  function reloadHabits() {
+    const config = {
+      headers: { Authorization: `Bearer ${token}` },
+    };
+    const promise = axios.get(
+      "https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/habits",
+      config
+    );
+    promise.then((response) => {
+      setHabits([...response.data]);
+    });
+  }
   function deleteHabit() {
     if (window.confirm("Deseja mesmo deletar o seu hábito?") === true) {
       const config = {
@@ -147,6 +183,7 @@ function Habit({ habit, token }) {
         config
       );
       promise.then((r) => {
+        reloadHabits();
         alert("Hábito deletado com sucesso!");
       });
     }
@@ -156,23 +193,27 @@ function Habit({ habit, token }) {
     <HabitStyled>
       <DayName>{habit.name}</DayName>
       <Days>
-        {habit.days.map((day) => {
-          if (day === 1) {
-            return <Day color={"#DBDBDB"}>S</Day>;
-          } else if (day === 2) {
-            return <Day color={"#DBDBDB"}>T</Day>;
-          } else if (day === 3) {
-            return <Day color={"#DBDBDB"}>Q</Day>;
-          } else if (day === 4) {
-            return <Day color={"#DBDBDB"}>Q</Day>;
-          } else if (day === 5) {
-            return <Day color={"#DBDBDB"}>S</Day>;
-          } else if (day === 6) {
-            return <Day color={"#DBDBDB"}>S</Day>;
-          } else if (day === 7) {
-            return <Day color={"#DBDBDB"}>D</Day>;
-          }
-        })}
+        <Day array={habit.days} id={1}>
+          S
+        </Day>
+        <Day array={habit.days} id={2}>
+          T
+        </Day>
+        <Day array={habit.days} id={3}>
+          Q
+        </Day>
+        <Day array={habit.days} id={4}>
+          Q
+        </Day>
+        <Day array={habit.days} id={5}>
+          S
+        </Day>
+        <Day array={habit.days} id={6}>
+          S
+        </Day>
+        <Day array={habit.days} id={7}>
+          D
+        </Day>
       </Days>
       <img src={apagar} onClick={deleteHabit} />
     </HabitStyled>
@@ -268,7 +309,7 @@ function DayButton({ addDays, numberOfWeek, dayOfWeek }) {
     }
   }
   return (
-    <Day
+    <DayButtonStyled
       background={background}
       color={color}
       onClick={() => {
@@ -277,7 +318,7 @@ function DayButton({ addDays, numberOfWeek, dayOfWeek }) {
       }}
     >
       {dayOfWeek}
-    </Day>
+    </DayButtonStyled>
   );
 }
 const HabitsStyled = styled.div`
@@ -350,6 +391,20 @@ const Days = styled.div`
 const Day = styled.div`
   width: 30px;
   height: 30px;
+  background-color: ${({ array, id }) =>
+    array.includes(id) ? "#cfcfcf" : "#fff"};
+  color: ${({ array, id }) => (array.includes(id) ? "#fff" : "#cfcfcf")};
+  font-size: 20px;
+  border-radius: 5px;
+  border: 1px solid #d4d4d4;
+  margin-right: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+const DayButtonStyled = styled.div`
+  width: 30px;
+  height: 30px;
   background-color: ${(props) => props.background};
   color: ${(props) => props.color};
   font-size: 20px;
@@ -360,6 +415,7 @@ const Day = styled.div`
   align-items: center;
   justify-content: center;
 `;
+
 const DayName = styled.p`
   font-size: 20px;
   color: #666666;

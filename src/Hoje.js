@@ -258,6 +258,8 @@ const Habits = styled.div`
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  font-family: "Lexend Deca", sans-serif;
+  font-weight: 400;
   width: 100%;
   padding: 0 4%;
 `;
@@ -268,7 +270,7 @@ const HabitStyled = styled.div`
   width: 100%;
   height: 94px;
   background-color: #fff;
-  border-radius: 5px;
+  border-radius: 8px;
   border: none;
   margin-top: 10px;
   padding: 14px;
