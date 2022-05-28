@@ -5,10 +5,13 @@ import {
   buildStyles,
 } from "react-circular-progressbar";
 import { useContext } from "react";
+import PercentageContext from "./contexts/PercentageContext";
 import UserContext from "./contexts/UserContext";
 
 export default function History() {
   const { userInfo } = useContext(UserContext);
+  const { percentage } = useContext(PercentageContext);
+  const { dayHabits } = useContext(PercentageContext);
 
   return (
     <>
@@ -25,7 +28,7 @@ export default function History() {
         <LinkStyled to="/hoje">
           <ProgressBar style={{ width: 91, height: 91 }}>
             <CircularProgressbarWithChildren
-              value={66}
+              value={(percentage.length / dayHabits.length) * 100}
               circleRatio={1}
               background={true}
               backgroundPadding={8}
@@ -66,9 +69,12 @@ export default function History() {
 }
 const HistoryStyled = styled.div`
   padding: 0 4%;
+  margin-top: 120px;
+  height: 100vh;
   h1 {
     font-size: 24px;
-    color: aliceblue;
+    color: #126ba5;
+    margin-bottom: 9px;
   }
   p {
     font-size: 18px;
@@ -82,6 +88,7 @@ const Header = styled.header`
   position: fixed;
   top: 0;
   left: 0;
+  z-index: 1;
   width: 100%;
   height: 70px;
   margin-bottom: 80px;

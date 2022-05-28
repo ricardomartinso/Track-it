@@ -12,11 +12,16 @@ import {
 import { useContext } from "react";
 import UserContext from "./contexts/UserContext";
 import TokenContext from "./contexts/TokenContext";
+import PercentageContext from "./contexts/PercentageContext";
 import dayjs from "dayjs/locale/pt-br";
+import { ThreeDots } from "react-loader-spinner";
 
 export default function Habits() {
   const { userInfo } = useContext(UserContext);
   const { token } = useContext(TokenContext);
+  const { percentage } = useContext(PercentageContext);
+  const { dayHabits } = useContext(PercentageContext);
+
   const [habits, setHabits] = useState([]);
   const [toggleCreation, setToggleCreation] = useState(false);
   const dayjs = require("dayjs");
@@ -58,7 +63,16 @@ export default function Habits() {
             </div>
           </AddHabit>
         </MyHabits>
-        {toggleCreation ? <CreateHabit token={token} /> : ""}
+        {toggleCreation ? (
+          <CreateHabit
+            token={token}
+            setHabits={setHabits}
+            habits={habits}
+            setToggleCreation={setToggleCreation}
+          />
+        ) : (
+          ""
+        )}
 
         {habits.length >= 1 ? (
           habits.map((habit) => (
@@ -82,7 +96,7 @@ export default function Habits() {
         <LinkStyled to="/hoje">
           <ProgressBar style={{ width: 91, height: 91 }}>
             <CircularProgressbarWithChildren
-              value={66}
+              value={(percentage.length / dayHabits.length) * 100}
               circleRatio={1}
               background={true}
               backgroundPadding={8}
@@ -144,19 +158,19 @@ function Habit({ habit, token }) {
       <Days>
         {habit.days.map((day) => {
           if (day === 1) {
-            return <Day>S</Day>;
+            return <Day color={"#DBDBDB"}>S</Day>;
           } else if (day === 2) {
-            return <Day>T</Day>;
+            return <Day color={"#DBDBDB"}>T</Day>;
           } else if (day === 3) {
-            return <Day>Q</Day>;
+            return <Day color={"#DBDBDB"}>Q</Day>;
           } else if (day === 4) {
-            return <Day>Q</Day>;
+            return <Day color={"#DBDBDB"}>Q</Day>;
           } else if (day === 5) {
-            return <Day>S</Day>;
+            return <Day color={"#DBDBDB"}>S</Day>;
           } else if (day === 6) {
-            return <Day>S</Day>;
+            return <Day color={"#DBDBDB"}>S</Day>;
           } else if (day === 7) {
-            return <Day>D</Day>;
+            return <Day color={"#DBDBDB"}>D</Day>;
           }
         })}
       </Days>
@@ -164,9 +178,11 @@ function Habit({ habit, token }) {
     </HabitStyled>
   );
 }
-function CreateHabit({ token }) {
+function CreateHabit({ token, setHabits, habits, setToggleCreation }) {
   const [habitName, setHabitName] = useState("");
   const [arrayDays, setArrayDays] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
   function removeRepeatedDays(id) {
     const arrays = [...arrayDays];
     if (arrays.includes(id)) {
@@ -180,113 +196,88 @@ function CreateHabit({ token }) {
     removeRepeatedDays(id);
   }
   function createHabit() {
+    setIsLoading(true);
     const config = {
       headers: { Authorization: `Bearer ${token}` },
     };
     const habitCreated = {
       name: habitName,
-      days: [1, 2, 5],
+      days: arrayDays.sort((a, b) => a - b),
     };
+
     const promise = axios.post(
       "https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/habits",
       habitCreated,
       config
     );
-    promise.then((r) => alert("Hábito criado com sucesso!"));
+    promise.then((response) => {
+      setHabits([...habits, response.data]);
+      setIsLoading(false);
+      setToggleCreation(false);
+      console.log("Hábito criado com sucesso!");
+    });
+    promise.catch((r) => {
+      setIsLoading(false);
+      alert("Por favor preencha os campos corretamente");
+    });
   }
   return (
     <CreateHabitStyled>
       <input
         type="text"
-        placeholder="Nome do Hábito"
+        placeholder="Nome do Hábito..."
         value={habitName}
         onChange={(e) => setHabitName(e.target.value)}
+        disabled={isLoading}
       />
       <Days>
-        <DayButton addDays={addDays} />
+        <DayButton addDays={addDays} numberOfWeek={1} dayOfWeek={"S"} />
+        <DayButton addDays={addDays} numberOfWeek={2} dayOfWeek={"T"} />
+        <DayButton addDays={addDays} numberOfWeek={3} dayOfWeek={"Q"} />
+        <DayButton addDays={addDays} numberOfWeek={4} dayOfWeek={"Q"} />
+        <DayButton addDays={addDays} numberOfWeek={5} dayOfWeek={"S"} />
+        <DayButton addDays={addDays} numberOfWeek={6} dayOfWeek={"S"} />
+        <DayButton addDays={addDays} numberOfWeek={7} dayOfWeek={"D"} />
       </Days>
       <SaveCancel>
-        <Cancel>Cancelar</Cancel>
-        <Save onClick={createHabit}>Salvar</Save>
+        <Cancel onClick={() => setToggleCreation(false)}>Cancelar</Cancel>
+        {isLoading ? (
+          <Save type="submit" onClick={createHabit}>
+            <ThreeDots color="#FFFFFF" />
+          </Save>
+        ) : (
+          <Save type="submit" onClick={createHabit}>
+            Salvar
+          </Save>
+        )}
       </SaveCancel>
     </CreateHabitStyled>
   );
 }
-function DayButton({ addDays }) {
+function DayButton({ addDays, numberOfWeek, dayOfWeek }) {
   const [background, setBackground] = useState("#fff");
+  const [color, setColor] = useState("#dbdbdb");
+
   function changeColor() {
     if (background === "#fff") {
-      setBackground("#666");
+      setColor("#fff");
+      setBackground("#CFCFCF");
     } else {
+      setColor("#dbdbdb");
       setBackground("#fff");
     }
   }
   return (
-    <>
-      <Day
-        background={background}
-        onClick={() => {
-          changeColor();
-          addDays(1);
-        }}
-      >
-        S
-      </Day>
-      <Day
-        background={background}
-        onClick={() => {
-          changeColor();
-          addDays(2);
-        }}
-      >
-        T
-      </Day>
-      <Day
-        background={background}
-        onClick={() => {
-          changeColor();
-          addDays(3);
-        }}
-      >
-        Q
-      </Day>
-      <Day
-        background={background}
-        onClick={() => {
-          changeColor();
-          addDays(4);
-        }}
-      >
-        Q
-      </Day>
-      <Day
-        background={background}
-        onClick={() => {
-          changeColor();
-          addDays(5);
-        }}
-      >
-        S
-      </Day>
-      <Day
-        background={background}
-        onClick={() => {
-          changeColor();
-          addDays(6);
-        }}
-      >
-        S
-      </Day>
-      <Day
-        background={background}
-        onClick={() => {
-          changeColor();
-          addDays(7);
-        }}
-      >
-        D
-      </Day>
-    </>
+    <Day
+      background={background}
+      color={color}
+      onClick={() => {
+        changeColor();
+        addDays(numberOfWeek);
+      }}
+    >
+      {dayOfWeek}
+    </Day>
   );
 }
 const HabitsStyled = styled.div`
@@ -294,8 +285,10 @@ const HabitsStyled = styled.div`
   flex-direction: column;
   color: black;
   width: 100%;
+  height: auto;
   margin-top: 100px;
   padding: 0 4%;
+  margin-bottom: 100px;
   h1 {
     font-size: 23px;
     font-weight: 400;
@@ -336,6 +329,7 @@ const HabitStyled = styled.div`
   width: 100%;
   height: 91px;
   margin-top: 25px;
+  margin-bottom: 25px;
   padding: 15px;
   background-color: #fff;
   position: relative;
@@ -357,7 +351,7 @@ const Day = styled.div`
   width: 30px;
   height: 30px;
   background-color: ${(props) => props.background};
-  color: #dbdbdb;
+  color: ${(props) => props.color};
   font-size: 20px;
   border-radius: 5px;
   border: 1px solid #d4d4d4;
@@ -393,6 +387,9 @@ const CreateHabitStyled = styled.div`
     color: #dbdbdb;
     font-size: 20px;
     padding-left: 10px;
+    &:disabled {
+      background-color: #f0f0f0;
+    }
     &::placeholder {
       color: #dbdbdb;
       font-size: 20px;
@@ -410,6 +407,9 @@ const SaveCancel = styled.div`
   }
 `;
 const Save = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 84px;
   height: 35px;
   margin-left: 15px;
@@ -431,6 +431,7 @@ const Header = styled.header`
   position: fixed;
   top: 0;
   left: 0;
+  z-index: 1;
   width: 100%;
   height: 70px;
   padding: 0 18px;
@@ -471,22 +472,3 @@ const LinkStyled = styled(Link)`
   font-size: 20px;
   color: #52b6ff;
 `;
-//
-//
-//
-//
-//
-// width: 340px
-// height: 91px;
-// background-color: #fff
-// position: relative;
-//
-// <div className="">{habit.name}</div>
-// <div className="">{habit.days.map(day => day)}</div>
-// <img src={apagar}/>
-//
-//
-//
-//
-//
-//

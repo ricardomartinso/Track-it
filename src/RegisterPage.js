@@ -121,6 +121,7 @@ const Register = styled.div`
   display: flex;
   align-items: center;
   flex-direction: column;
+  height: 100vh;
 `;
 const FormStyled = styled.form`
   display: flex;

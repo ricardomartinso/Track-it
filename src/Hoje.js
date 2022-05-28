@@ -10,14 +10,19 @@ import {
 } from "react-circular-progressbar";
 import TokenContext from "./contexts/TokenContext";
 import setinha from "./assets/vector.png";
+import PercentageContext from "./contexts/PercentageContext";
 
 export default function Hoje() {
   const dayjs = require("dayjs");
+  const { percentage } = useContext(PercentageContext);
+  const { setPercentage } = useContext(PercentageContext);
+  const { dayHabits } = useContext(PercentageContext);
+  const { setDayHabits } = useContext(PercentageContext);
 
   const { userInfo } = useContext(UserContext);
   const { token } = useContext(TokenContext);
   const [habits, setHabits] = useState([]);
-  const [percentage, setPercentage] = useState([]);
+  const [daysChecked, setDaysChecked] = useState([]);
 
   useEffect(() => {
     const config = {
@@ -31,7 +36,13 @@ export default function Hoje() {
 
     promise.then((response) => {
       setHabits([...response.data]);
-      setPercentage([...response.data]);
+      setDayHabits([...response.data]);
+      setDaysChecked([...response.data.map((habit) => habit.id)]);
+      setPercentage([
+        ...response.data
+          .filter((habit) => habit.done === true)
+          .map((habit) => habit.id),
+      ]);
     });
   }, []);
   return (
@@ -42,12 +53,31 @@ export default function Hoje() {
       </Header>
       <Day>
         {dayjs().locale("pt-br").format("dddd, DD/MM")}
-        <HabitsConcluded>{}</HabitsConcluded>
+        {percentage.length >= 1 ? (
+          <HabitsConcluded color={"#8FC549"}>
+            {((percentage.length / dayHabits.length) * 100).toFixed(0)}% dos
+            hábitos concluídos
+          </HabitsConcluded>
+        ) : (
+          <HabitsConcluded color={"#bababa"}>
+            Nenhum hábito concluído ainda
+          </HabitsConcluded>
+        )}
       </Day>
       <Habits>
-        {habits.map((habit) => (
-          <Habit habit={habit} token={token} key={habit.id} />
-        ))}
+        {habits.map((habit) => {
+          return (
+            <Habit
+              habit={habit}
+              token={token}
+              key={habit.id}
+              daysChecked={daysChecked}
+              setDaysChecked={setDaysChecked}
+              percentage={percentage}
+              setPercentage={setPercentage}
+            />
+          );
+        })}
       </Habits>
 
       <Menu>
@@ -55,7 +85,7 @@ export default function Hoje() {
         <LinkStyled to="/hoje">
           <ProgressBar style={{ width: 91, height: 91 }}>
             <CircularProgressbarWithChildren
-              value={percentage}
+              value={(percentage.length / dayHabits.length) * 100}
               circleRatio={1}
               background={true}
               backgroundPadding={8}
@@ -94,12 +124,20 @@ export default function Hoje() {
     </>
   );
 }
-function Habit({ habit, token }) {
+function Habit({
+  habit,
+  token,
+  daysChecked,
+  setDaysChecked,
+  percentage,
+  setPercentage,
+}) {
   const [checkedColor, setCheckedColor] = useState(habit.done);
   const [currentSequence, setCurrenceSequence] = useState(
     habit.currentSequence
   );
   const [highestSequence, setHighestSequence] = useState(habit.highestSequence);
+  const [comparedColor, setComparedColor] = useState(false);
 
   function markAsDoneHabit() {
     const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -112,9 +150,12 @@ function Habit({ habit, token }) {
       setCheckedColor(true);
       setHighestSequence(highestSequence + 1);
       setCurrenceSequence(currentSequence + 1);
+      compareSequence();
+      addArray(habit.id);
     });
     promise.catch((response) => console.log(response.data));
   }
+
   function desmarkAsDoneHabit() {
     const config = { headers: { Authorization: `Bearer ${token}` } };
     const promise = axios.post(
@@ -126,15 +167,53 @@ function Habit({ habit, token }) {
       setCheckedColor(false);
       setCurrenceSequence(currentSequence - 1);
       setHighestSequence(highestSequence - 1);
+      compareSequence();
+      removeRepeated(habit.id);
     });
+
     promise.catch((response) => console.log(response.data));
   }
+
+  function compareSequence() {
+    if (currentSequence === highestSequence) {
+      setComparedColor(true);
+    }
+  }
+  function addArray(id) {
+    setPercentage([...percentage, id]);
+    setDaysChecked([...daysChecked, id]);
+    removeRepeated(id);
+  }
+  function removeRepeated(id) {
+    const arrays = [...daysChecked];
+    const arrayContext = [...percentage];
+
+    if (arrays.includes(id)) {
+      const removeRepeated = arrays.filter((idRepeated) => idRepeated !== id);
+      const removeRepeatedContext = arrayContext.filter(
+        (idRepeated) => idRepeated !== id
+      );
+      setDaysChecked(removeRepeated);
+      setPercentage(removeRepeatedContext);
+      return;
+    }
+  }
+  useEffect(() => {
+    compareSequence();
+  }, []);
+
   return (
     <HabitStyled>
       <HabitInfo>
         <h1>{habit.name}</h1>
-        <p>Sequência atual: {currentSequence}</p>
-        <p>Seu recorde: {highestSequence}</p>
+        <SequenceDays>
+          Sequência atual:
+          <span className={`${checkedColor}`}>{currentSequence} dias </span>
+        </SequenceDays>
+        <HighestSequence>
+          Seu recorde:
+          <span className={`${comparedColor}`}>{highestSequence} dias </span>
+        </HighestSequence>
       </HabitInfo>
       <Check
         color={checkedColor ? "#8fc549" : "#e7e7e7"}
@@ -159,6 +238,7 @@ const Header = styled.header`
   position: fixed;
   top: 0;
   left: 0;
+  z-index: 1;
   width: 100%;
   height: 70px;
   margin-bottom: 80px;
@@ -200,13 +280,37 @@ const HabitInfo = styled.div`
     font-size: 20px;
     margin-bottom: 7px;
   }
-  p {
-    font-size: 13px;
-  }
+
   &::first-letter {
     text-transform: uppercase;
   }
 `;
+const SequenceDays = styled.div`
+  font-size: 13px;
+
+  .true {
+    margin-left: 5px;
+    color: #8fc549;
+  }
+  .false {
+    margin-left: 5px;
+    color: #666;
+  }
+`;
+
+const HighestSequence = styled.div`
+  font-size: 13px;
+
+  .true {
+    margin-left: 5px;
+    color: #8fc549;
+  }
+  .false {
+    margin-left: 5px;
+    color: #666;
+  }
+`;
+
 const Check = styled.div`
   display: flex;
   align-items: center;
@@ -217,14 +321,11 @@ const Check = styled.div`
   background-color: ${(props) => props.color};
 `;
 const HabitsConcluded = styled.div`
-  color: #bababa;
   font-size: 18px;
   font-weight: 400;
   margin-top: 5px;
   text-transform: none;
-  p {
-    color: ${(props) => props.color};
-  }
+  color: ${(props) => props.color};
 `;
 const Day = styled.div`
   width: 100%;

@@ -88,10 +88,10 @@ function Form({ loginApp, setEmail, email, password, setPassword, isLoading }) {
 const LoginPageStyled = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
   flex-direction: column;
   width: 100%;
   margin: 80px auto 0 auto;
+  height: 100vh;
 `;
 const FormStyled = styled.form`
   display: flex;
