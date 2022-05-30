@@ -80,7 +80,7 @@ function Form({ loginApp, setEmail, email, password, setPassword, isLoading }) {
           <Button type="submit">Entrar</Button>
         )}
       </FormStyled>
-      <Link to="/cadastro">Não tem uma conta? Cadastre-se</Link>
+      <StyledLink to="/cadastro">Não tem uma conta? Cadastre-se</StyledLink>
     </>
   );
 }
@@ -128,4 +128,7 @@ const Button = styled.button`
   &:disabled {
     background-color: rgba(82, 182, 255, 0.7);
   }
+`;
+const StyledLink = styled(Link)`
+  color: #52b6ff;
 `;

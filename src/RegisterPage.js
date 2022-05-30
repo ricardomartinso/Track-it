@@ -111,7 +111,7 @@ function Form({
           <Button type="submit">Cadastrar</Button>
         )}
       </FormStyled>
-      <Link to="/">Já tem uma conta? Faça Login</Link>
+      <StyledLink to="/">Já tem uma conta? Faça Login</StyledLink>
     </>
   );
 }
@@ -159,4 +159,7 @@ const Button = styled.button`
   &:disabled {
     background-color: rgba(82, 182, 255, 0.7);
   }
+`;
+const StyledLink = styled(Link)`
+  color: #52b6ff;
 `;
