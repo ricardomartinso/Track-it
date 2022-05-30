@@ -273,12 +273,12 @@ const Header = styled.header`
 const Habits = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex-direction: column;
   font-family: "Lexend Deca", sans-serif;
   font-weight: 400;
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
   padding: 0 4%;
   margin-bottom: 120px;
 `;
@@ -288,11 +288,11 @@ const HabitStyled = styled.div`
   align-items: center;
   width: 100%;
   height: 100%;
-  height: 94px;
+  max-height: 94px;
+  margin-top: 25px;
   background-color: #fff;
   border-radius: 8px;
   border: none;
-  margin-top: 10px;
   padding: 14px;
 `;
 const HabitInfo = styled.div`

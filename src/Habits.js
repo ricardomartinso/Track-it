@@ -385,7 +385,7 @@ const HabitsStyled = styled.div`
   flex-direction: column;
   color: black;
   width: 100%;
-  height: auto;
+  min-height: 100vh;
   margin-top: 100px;
   padding: 0 4%;
   margin-bottom: 100px;
@@ -420,6 +420,7 @@ const MyHabits = styled.div`
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  height: fit-content;
 `;
 const HabitStyled = styled.div`
   display: flex;
