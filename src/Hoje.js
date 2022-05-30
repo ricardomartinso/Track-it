@@ -217,7 +217,7 @@ function Habit({ habit, token, percentage, setPercentage }) {
         <h1>{habit.name}</h1>
         <SequenceDays>
           Sequência atual:
-          {currentSequence === 0 || currentSequence === 1 ? (
+          {currentSequence === 1 ? (
             <span className={`${checkedColor}`}>{currentSequence} dia </span>
           ) : (
             <span className={`${checkedColor}`}>{currentSequence} dias </span>
@@ -225,7 +225,7 @@ function Habit({ habit, token, percentage, setPercentage }) {
         </SequenceDays>
         <HighestSequence>
           Seu recorde:{" "}
-          {highestSequence === 0 || currentSequence === 1 ? (
+          {highestSequence === 1 ? (
             <span className={`${comparedColor}`}>{highestSequence} dia </span>
           ) : (
             <span className={`${comparedColor}`}>{highestSequence} dias </span>

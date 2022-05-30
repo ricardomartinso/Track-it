@@ -8,8 +8,8 @@ import UserContext from "./contexts/UserContext";
 import { ThreeDots } from "react-loader-spinner";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("ricardo@ricardo.com");
-  const [password, setPassword] = useState("12345");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { setToken } = useContext(TokenContext);
   const { setUserInfo } = useContext(UserContext);
   const navigate = useNavigate();
