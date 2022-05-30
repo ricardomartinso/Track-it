@@ -281,13 +281,48 @@ function CreateHabit({
         disabled={isLoading}
       />
       <Days>
-        <DayButton addDays={addDays} numberOfWeek={1} dayOfWeek={"S"} />
-        <DayButton addDays={addDays} numberOfWeek={2} dayOfWeek={"T"} />
-        <DayButton addDays={addDays} numberOfWeek={3} dayOfWeek={"Q"} />
-        <DayButton addDays={addDays} numberOfWeek={4} dayOfWeek={"Q"} />
-        <DayButton addDays={addDays} numberOfWeek={5} dayOfWeek={"S"} />
-        <DayButton addDays={addDays} numberOfWeek={6} dayOfWeek={"S"} />
-        <DayButton addDays={addDays} numberOfWeek={7} dayOfWeek={"D"} />
+        <DayButton
+          addDays={addDays}
+          numberOfWeek={1}
+          dayOfWeek={"S"}
+          isLoading={isLoading}
+        />
+        <DayButton
+          addDays={addDays}
+          numberOfWeek={2}
+          dayOfWeek={"T"}
+          isLoading={isLoading}
+        />
+        <DayButton
+          addDays={addDays}
+          numberOfWeek={3}
+          dayOfWeek={"Q"}
+          isLoading={isLoading}
+        />
+        <DayButton
+          addDays={addDays}
+          numberOfWeek={4}
+          dayOfWeek={"Q"}
+          isLoading={isLoading}
+        />
+        <DayButton
+          addDays={addDays}
+          numberOfWeek={5}
+          dayOfWeek={"S"}
+          isLoading={isLoading}
+        />
+        <DayButton
+          addDays={addDays}
+          numberOfWeek={6}
+          dayOfWeek={"S"}
+          isLoading={isLoading}
+        />
+        <DayButton
+          addDays={addDays}
+          numberOfWeek={7}
+          dayOfWeek={"D"}
+          isLoading={isLoading}
+        />
       </Days>
       <SaveCancel>
         <Cancel
@@ -316,23 +351,26 @@ function CreateHabit({
     </CreateHabitStyled>
   );
 }
-function DayButton({ addDays, numberOfWeek, dayOfWeek }) {
+function DayButton({ addDays, numberOfWeek, dayOfWeek, isLoading }) {
   const [background, setBackground] = useState("#fff");
   const [color, setColor] = useState("#dbdbdb");
 
   function changeColor() {
-    if (background === "#fff") {
-      setColor("#fff");
-      setBackground("#CFCFCF");
-    } else {
-      setColor("#dbdbdb");
-      setBackground("#fff");
-    }
+    if (isLoading === false) {
+      if (background === "#fff") {
+        setColor("#fff");
+        setBackground("#CFCFCF");
+      } else {
+        setColor("#dbdbdb");
+        setBackground("#fff");
+      }
+    } else return;
   }
   return (
     <DayButtonStyled
       background={background}
       color={color}
+      disabled={isLoading}
       onClick={() => {
         changeColor();
         addDays(numberOfWeek);
