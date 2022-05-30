@@ -21,7 +21,7 @@ export default function Habits() {
   const { token } = useContext(TokenContext);
   const { percentage } = useContext(PercentageContext);
   const { dayHabits } = useContext(PercentageContext);
-
+  const [habitName, setHabitName] = useState("");
   const [habits, setHabits] = useState([]);
   const [toggleCreation, setToggleCreation] = useState(false);
   const dayjs = require("dayjs");
@@ -42,9 +42,8 @@ export default function Habits() {
   function openOrCloseHabit() {
     if (toggleCreation === false) {
       setToggleCreation(true);
-    } else {
-      setToggleCreation(false);
     }
+    return;
   }
   return (
     <>
@@ -67,6 +66,8 @@ export default function Habits() {
           <CreateHabit
             token={token}
             setHabits={setHabits}
+            habitName={habitName}
+            setHabitName={setHabitName}
             habits={habits}
             setToggleCreation={setToggleCreation}
           />
@@ -219,8 +220,14 @@ function Habit({ habit, token, setHabits }) {
     </HabitStyled>
   );
 }
-function CreateHabit({ token, setHabits, habits, setToggleCreation }) {
-  const [habitName, setHabitName] = useState("");
+function CreateHabit({
+  token,
+  setHabits,
+  habits,
+  setToggleCreation,
+  habitName,
+  setHabitName,
+}) {
   const [arrayDays, setArrayDays] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -268,7 +275,9 @@ function CreateHabit({ token, setHabits, habits, setToggleCreation }) {
         type="text"
         placeholder="Nome do Hábito..."
         value={habitName}
-        onChange={(e) => setHabitName(e.target.value)}
+        onChange={(e) => {
+          setHabitName(e.target.value);
+        }}
         disabled={isLoading}
       />
       <Days>
@@ -281,7 +290,13 @@ function CreateHabit({ token, setHabits, habits, setToggleCreation }) {
         <DayButton addDays={addDays} numberOfWeek={7} dayOfWeek={"D"} />
       </Days>
       <SaveCancel>
-        <Cancel onClick={() => setToggleCreation(false)}>Cancelar</Cancel>
+        <Cancel
+          onClick={() => {
+            setToggleCreation(false);
+          }}
+        >
+          Cancelar
+        </Cancel>
         {isLoading ? (
           <Save type="submit" onClick={createHabit}>
             <ThreeDots color="#FFFFFF" />

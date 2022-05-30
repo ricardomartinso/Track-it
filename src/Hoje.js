@@ -22,7 +22,8 @@ export default function Hoje() {
   const { userInfo } = useContext(UserContext);
   const { token } = useContext(TokenContext);
   const [habits, setHabits] = useState([]);
-  const [daysChecked, setDaysChecked] = useState([]);
+  const [currentSequence, setCurrentSequence] = useState(0);
+  const [highestSequence, setHighestSequence] = useState(0);
 
   useEffect(() => {
     const config = {
@@ -37,7 +38,6 @@ export default function Hoje() {
     promise.then((response) => {
       setHabits([...response.data]);
       setDayHabits([...response.data]);
-      setDaysChecked([...response.data.map((habit) => habit.id)]);
       setPercentage([
         ...response.data
           .filter((habit) => habit.done === true)
@@ -71,10 +71,12 @@ export default function Hoje() {
               habit={habit}
               token={token}
               key={habit.id}
-              daysChecked={daysChecked}
-              setDaysChecked={setDaysChecked}
               percentage={percentage}
               setPercentage={setPercentage}
+              currentSequence={currentSequence}
+              setCurrenceSequence={setCurrentSequence}
+              highestSequence={highestSequence}
+              setHighestSequence={setHighestSequence}
             />
           );
         })}
@@ -124,22 +126,16 @@ export default function Hoje() {
     </>
   );
 }
-function Habit({
-  habit,
-  token,
-  daysChecked,
-  setDaysChecked,
-  percentage,
-  setPercentage,
-}) {
+function Habit({ habit, token, percentage, setPercentage }) {
   const [checkedColor, setCheckedColor] = useState(habit.done);
-  const [currentSequence, setCurrenceSequence] = useState(
-    habit.currentSequence
-  );
+  const [isMarked, setIsMarked] = useState(habit.done);
+  const [currentSequence, setCurrentSequence] = useState(habit.currentSequence);
   const [highestSequence, setHighestSequence] = useState(habit.highestSequence);
   const [comparedColor, setComparedColor] = useState(false);
 
   function markAsDoneHabit() {
+    let current = currentSequence;
+    let highest = highestSequence;
     const config = { headers: { Authorization: `Bearer ${token}` } };
     const promise = axios.post(
       `https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/habits/${habit.id}/check`,
@@ -147,9 +143,12 @@ function Habit({
       config
     );
     promise.then((response) => {
+      current = current + 1;
+      highest = highest + 1;
+      setIsMarked(true);
       setCheckedColor(true);
-      setHighestSequence(highestSequence + 1);
-      setCurrenceSequence(currentSequence + 1);
+      setHighestSequence(current);
+      setCurrentSequence(highest);
       compareSequence();
       addArray(habit.id);
     });
@@ -157,6 +156,9 @@ function Habit({
   }
 
   function desmarkAsDoneHabit() {
+    let current = currentSequence;
+    let highest = highestSequence;
+
     const config = { headers: { Authorization: `Bearer ${token}` } };
     const promise = axios.post(
       `https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/habits/${habit.id}/uncheck`,
@@ -164,10 +166,16 @@ function Habit({
       config
     );
     promise.then((response) => {
+      current = current - 1;
+      highest = highest - 1;
+      setIsMarked(false);
       setCheckedColor(false);
-      setCurrenceSequence(currentSequence - 1);
-      setHighestSequence(highestSequence - 1);
-      compareSequence();
+      setComparedColor(false);
+      setCurrentSequence(current);
+      setHighestSequence(highest);
+      if (current === 1 && highest === 1) {
+        compareSequence();
+      }
       removeRepeated(habit.id);
     });
 
@@ -177,29 +185,30 @@ function Habit({
   function compareSequence() {
     if (currentSequence === highestSequence) {
       setComparedColor(true);
+      setCheckedColor(true);
     }
   }
   function addArray(id) {
     setPercentage([...percentage, id]);
-    setDaysChecked([...daysChecked, id]);
     removeRepeated(id);
   }
   function removeRepeated(id) {
-    const arrays = [...daysChecked];
     const arrayContext = [...percentage];
 
-    if (arrays.includes(id)) {
-      const removeRepeated = arrays.filter((idRepeated) => idRepeated !== id);
+    if (arrayContext.includes(id)) {
       const removeRepeatedContext = arrayContext.filter(
         (idRepeated) => idRepeated !== id
       );
-      setDaysChecked(removeRepeated);
       setPercentage(removeRepeatedContext);
       return;
     }
   }
   useEffect(() => {
-    compareSequence();
+    if (currentSequence === 0 && highestSequence === 0) {
+      return;
+    } else {
+      compareSequence();
+    }
   }, []);
 
   return (
@@ -208,17 +217,25 @@ function Habit({
         <h1>{habit.name}</h1>
         <SequenceDays>
           Sequência atual:
-          <span className={`${checkedColor}`}>{currentSequence} dias </span>
+          {currentSequence === 0 || currentSequence === 1 ? (
+            <span className={`${checkedColor}`}>{currentSequence} dia </span>
+          ) : (
+            <span className={`${checkedColor}`}>{currentSequence} dias </span>
+          )}
         </SequenceDays>
         <HighestSequence>
-          Seu recorde:
-          <span className={`${comparedColor}`}>{highestSequence} dias </span>
+          Seu recorde:{" "}
+          {highestSequence === 0 || currentSequence === 1 ? (
+            <span className={`${comparedColor}`}>{highestSequence} dia </span>
+          ) : (
+            <span className={`${comparedColor}`}>{highestSequence} dias </span>
+          )}
         </HighestSequence>
       </HabitInfo>
       <Check
-        color={checkedColor ? "#8fc549" : "#e7e7e7"}
+        color={isMarked ? "#8fc549" : "#e7e7e7"}
         onClick={() => {
-          if (checkedColor === true) {
+          if (isMarked === true) {
             desmarkAsDoneHabit();
           } else {
             markAsDoneHabit();
