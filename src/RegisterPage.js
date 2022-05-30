@@ -104,7 +104,7 @@ function Form({
           required
         />
         {isLoading ? (
-          <Button type="submit">
+          <Button type="submit" disabled={true}>
             <ThreeDots color="#FFFFFF" />
           </Button>
         ) : (
@@ -156,4 +156,7 @@ const Button = styled.button`
   margin-bottom: 16px;
   color: #fff;
   font-size: 20px;
+  &:disabled {
+    background-color: rgba(82, 182, 255, 0.7);
+  }
 `;

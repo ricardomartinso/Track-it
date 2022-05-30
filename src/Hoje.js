@@ -278,13 +278,16 @@ const Habits = styled.div`
   font-family: "Lexend Deca", sans-serif;
   font-weight: 400;
   width: 100%;
+  height: 100%;
   padding: 0 4%;
+  margin-bottom: 120px;
 `;
 const HabitStyled = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  height: 100%;
   height: 94px;
   background-color: #fff;
   border-radius: 8px;

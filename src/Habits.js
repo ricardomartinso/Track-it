@@ -298,11 +298,17 @@ function CreateHabit({
           Cancelar
         </Cancel>
         {isLoading ? (
-          <Save type="submit" onClick={createHabit}>
+          <Save type="submit" onClick={createHabit} disabled={true}>
             <ThreeDots color="#FFFFFF" />
           </Save>
         ) : (
-          <Save type="submit" onClick={createHabit}>
+          <Save
+            type="submit"
+            onClick={() => {
+              setHabitName("");
+              createHabit();
+            }}
+          >
             Salvar
           </Save>
         )}
@@ -490,6 +496,9 @@ const Save = styled.button`
   color: white;
   border: none;
   border-radius: 5px;
+  &:disabled {
+    background-color: rgba(82, 182, 255, 0.7);
+  }
 `;
 const Cancel = styled.div`
   color: #52b6ff;
